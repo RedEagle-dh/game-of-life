@@ -2,12 +2,20 @@ use minifb::{Window, WindowOptions};
 use rand::Rng;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
+use std::env;
 
 fn main() {
-    let window_width = 1000;
-    let window_height = 1000;
-    let grid_width = 64;
-    let grid_height = 64;
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() > 1 && (args[1] == "-h" || args[1] == "--help") {
+        print_usage(&args[0]);
+        return;
+    }
+
+    let window_width = parse_arg(&args, 1, 1000);
+    let window_height = parse_arg(&args, 2, 1000);
+    let grid_width = parse_arg(&args, 3, 64);
+    let grid_height = parse_arg(&args, 4, 64);
 
     let mut grid = generate_grid(grid_width, grid_height, 1000);
 
@@ -133,4 +141,27 @@ fn calculate_rule(grid: &Vec<Vec<bool>>, x: usize, y: usize) -> i32 {
         }
     }
     return neighbours_counter;
+}
+
+fn parse_arg(args: &[String], index: usize, default: usize) -> usize {
+    args.get(index)
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(default)
+}
+
+fn print_usage(program: &str) {
+    println!("Conway's Game of Life");
+    println!();
+    println!("Usage: {} [window_width] [window_height] [grid_width] [grid_height]", program);
+    println!();
+    println!("Arguments:");
+    println!("  window_width   Window width in pixels (default: 1000)");
+    println!("  window_height  Window height in pixels (default: 1000)");
+    println!("  grid_width     Grid width in cells (default: 64)");
+    println!("  grid_height    Grid height in cells (default: 64)");
+    println!();
+    println!("Examples:");
+    println!("  {}                      # Use all defaults", program);
+    println!("  {} 800 600              # 800x600 window, 64x64 grid", program);
+    println!("  {} 800 600 32 32        # 800x600 window, 32x32 grid", program);
 }
